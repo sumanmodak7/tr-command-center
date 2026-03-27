@@ -802,6 +802,24 @@ function cardHTML(t,isDone){
 function esc(s){const d=document.createElement('div');d.appendChild(document.createTextNode(s));return d.innerHTML;}
 
 init();
+
+/* ── AUTO-POLL every 30s ─────────────────────────────────────────────── */
+setInterval(async () => {
+  try {
+    const rows = await sb('GET','tasks?order=sort_order.asc,created.asc');
+    if(!rows) return;
+    // Only re-render if something actually changed
+    const newJson = JSON.stringify(rows);
+    const oldJson = JSON.stringify(tasks);
+    if(newJson !== oldJson){
+      tasks = rows;
+      render();
+      // flash status briefly
+      setStatus('ok','Updated');
+      setTimeout(()=>setStatus('ok','Live'),1500);
+    }
+  } catch(e){ /* silent fail on poll */ }
+}, 30000);
 </script>
 </body>
 </html>
