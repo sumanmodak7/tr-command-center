@@ -529,64 +529,109 @@ async function loadComms(){
 function renderComms(subfilter){
   document.getElementById('loadingScreen').style.display='none';
   document.getElementById('mainContent').style.display='block';
-  
   const list = document.getElementById('taskList');
-  
-  // Filter by subfilter
-  const filtered = subfilter==='comms' ? commsItems : commsItems.filter(c=>c.source===subfilter);
-  
-  // Update counts
-  document.getElementById('cnt-comms').textContent = commsItems.length;
-  document.getElementById('cnt-slack').textContent = commsItems.filter(c=>c.source==='slack').length;
-  document.getElementById('cnt-gmail').textContent = commsItems.filter(c=>c.source==='gmail').length;
-  
+  const sf = subfilter||filter;
+  const allComms = commsItems;
+  const needsResp = allComms.filter(c=>c.needs_response);
+  document.getElementById('cnt-comms').textContent = needsResp.length;
+  document.getElementById('cnt-slack').textContent = needsResp.filter(c=>c.source==='slack').length;
+  document.getElementById('cnt-gmail').textContent = needsResp.filter(c=>c.source==='gmail').length;
   if(!commsLoaded || commsItems.length===0){
-    list.innerHTML = `<div class="comms-loading">
-      <div style="font-size:32px;margin-bottom:12px">📬</div>
-      <div style="font-weight:500;color:var(--text);margin-bottom:6px">No items yet</div>
-      <div>Open this conversation with Claude and ask for your morning or evening briefing — Claude will pull your Slack messages and emails and populate this section automatically.</div>
-    </div>`;
+    list.innerHTML = `<div class="comms-loading"><div style="font-size:32px;margin-bottom:12px">📬</div><div style="font-weight:500;color:var(--text);margin-bottom:6px">No items yet</div><div style="max-width:400px;margin:0 auto">Say "morning briefing" or "evening briefing" to Claude — he will pull your Slack messages and emails and populate this section automatically.</div></div>`;
+    document.getElementById('sOpen').textContent='0';document.getElementById('sHigh').textContent='—';document.getElementById('sDone').textContent='—';document.getElementById('sTotal').textContent='0';
     return;
   }
-  
-  let html = '<div class="sec-hdr"><span class="sec-title">Needs Your Attention</span><div class="sec-line"></div>';
-  html += `<button class="comms-refresh" onclick="loadComms().then(()=>renderComms('${subfilter}'))">↻ Refresh</button>`;
-  html += '</div>';
-  
-  filtered.forEach(item => {
-    html += `<div class="comms-card">
-      <div class="comms-card-header">
-        <span class="comms-source ${item.source}">${item.source==='slack'?'Slack':'Gmail'}</span>
-        <div class="comms-body">
-          <div class="comms-from">${esc(item.from)}</div>
-          <div class="comms-subject">${esc(item.subject)}</div>
-          <div class="comms-meta">${esc(item.preview||'')}</div>
-          ${item.url?`<a class="comms-action" href="${item.url}" target="_blank">Open ↗</a>`:''}
-        </div>
-      </div>
-    </div>`;
-  });
-  
-  list.innerHTML = html;
-  
-  // Update stats
-  document.getElementById('sOpen').textContent = filtered.length;
-  document.getElementById('sHigh').textContent = '—';
-  document.getElementById('sDone').textContent = '—';
-  document.getElementById('sTotal').textContent = filtered.length;
+  let filtered = sf==='comms'?allComms:sf==='slack'?allComms.filter(c=>c.source==='slack'):sf==='gmail'?allComms.filter(c=>c.source==='gmail'):allComms;
+  const open=filtered.filter(c=>c.needs_response);
+  const done=filtered.filter(c=>!c.needs_response);
+  document.getElementById('sOpen').textContent=open.length;
+  document.getElementById('sHigh').textContent=open.filter(c=>c.source==='slack').length+' Slack';
+  document.getElementById('sDone').textContent=done.length+' reviewed';
+  document.getElementById('sTotal').textContent=filtered.length;
+  let html='';
+  if(open.length>0){
+    html+='<div class="sec-hdr"><span class="sec-title">Needs Response</span><div class="sec-line"></div>';
+    if(done.length>0) html+=`<button class="sec-action" onclick="clearReviewedComms()">Clear reviewed</button>`;
+    html+='</div>';
+    html+=open.map(item=>commsCardHTML(item,false)).join('');
+  }
+  if(done.length>0){
+    html+='<div class="sec-hdr" style="margin-top:20px"><span class="sec-title">Reviewed</span><div class="sec-line"></div></div>';
+    html+=done.map(item=>commsCardHTML(item,true)).join('');
+  }
+  if(filtered.length===0){html='<div class="empty">No items in this view.</div>';}
+  list.innerHTML=html;
 }
 
-/* ── INJECT COMMS (called by Claude via Supabase or direct) ─────────────── */
-// Claude writes comms items to a separate Supabase table: comms_items
-// This function loads them
+function commsCardHTML(item,isReviewed){
+  const srcLabel=item.source==='slack'?'Slack':'Gmail';
+  const fadeSt=isReviewed?'opacity:.45;':'';
+  const txtSt=isReviewed?'text-decoration:line-through;color:var(--text-mute);':'';
+  return `<div class="comms-card" id="cc-${item.id}" style="${fadeSt}">
+    <div class="comms-card-header">
+      <div class="cb${isReviewed?' on':''}" onclick="toggleComms('${item.id}')" style="margin-top:2px;flex-shrink:0"></div>
+      <span class="comms-source ${item.source}" style="flex-shrink:0">${srcLabel}</span>
+      <div class="comms-body" style="flex:1;min-width:0">
+        <div class="comms-from">${esc(item.from_name||'')}</div>
+        <div class="comms-subject" style="${txtSt}">${esc(item.subject||'')}</div>
+        <div class="comms-meta">${esc(item.preview||'')}</div>
+        ${item.url?`<a class="comms-action" href="${item.url}" target="_blank">Open ↗</a>`:''}
+      </div>
+      <div class="task-ctrl" style="flex-shrink:0;opacity:1">
+        ${isReviewed?`<button class="ib" onclick="unReviewComms('${item.id}')" title="Mark needs response"><svg><use href="#ico-open"/></svg></button>`:''}
+        <button class="ib danger" onclick="deleteComms('${item.id}')" title="Delete"><svg><use href="#ico-del"/></svg></button>
+      </div>
+    </div>
+  </div>`;
+}
+
+async function toggleComms(id){
+  const item=commsItems.find(x=>x.id===id);if(!item)return;
+  item.needs_response=!item.needs_response;
+  renderComms(filter);
+  try{await sb('PATCH',`comms_items?id=eq.${id}`,{needs_response:item.needs_response});}
+  catch(e){setStatus('err','Save failed');}
+}
+
+async function unReviewComms(id){
+  const item=commsItems.find(x=>x.id===id);if(!item)return;
+  item.needs_response=true;
+  renderComms(filter);
+  try{await sb('PATCH',`comms_items?id=eq.${id}`,{needs_response:true});}
+  catch(e){setStatus('err','Save failed');}
+}
+
+async function deleteComms(id){
+  commsItems=commsItems.filter(x=>x.id!==id);
+  renderComms(filter);
+  try{await sb('DELETE',`comms_items?id=eq.${id}`);}
+  catch(e){setStatus('err','Delete failed');}
+}
+
+async function clearReviewedComms(){
+  const toDelete=commsItems.filter(c=>!c.needs_response).map(c=>c.id);
+  commsItems=commsItems.filter(c=>c.needs_response);
+  renderComms(filter);
+  for(const id of toDelete){try{await sb('DELETE',`comms_items?id=eq.${id}`);}catch(e){}}
+}
+
+
 async function loadCommsFromSupabase(){
   try{
     const rows = await sb('GET','comms_items?order=ts.desc');
-    if(rows) commsItems = rows;
-    commsLoaded = true;
-    document.getElementById('cnt-comms').textContent = commsItems.length;
-    document.getElementById('cnt-slack').textContent = commsItems.filter(c=>c.source==='slack').length;
-    document.getElementById('cnt-gmail').textContent = commsItems.filter(c=>c.source==='gmail').length;
+    if(rows){
+      const changed = JSON.stringify(rows) !== JSON.stringify(commsItems);
+      commsItems = rows;
+      commsLoaded = true;
+      if(['comms','slack','gmail'].includes(filter)) renderComms(filter);
+      else {
+        // just update counts
+        const nr = commsItems.filter(c=>c.needs_response);
+        document.getElementById('cnt-comms').textContent = nr.length;
+        document.getElementById('cnt-slack').textContent = nr.filter(c=>c.source==='slack').length;
+        document.getElementById('cnt-gmail').textContent = nr.filter(c=>c.source==='gmail').length;
+      }
+    }
   } catch(e){ /* comms table may not exist yet */ }
 }
 
@@ -945,14 +990,15 @@ setInterval(async () => {
     const oldJson = JSON.stringify(tasks);
     if(newJson !== oldJson){
       tasks = rows;
-      render();
+      if(['comms','slack','gmail'].includes(filter)) renderComms(filter);
+      else render();
       await loadCommsFromSupabase();
       // flash status briefly
       setStatus('ok','Updated');
       setTimeout(()=>setStatus('ok','Live'),1500);
     }
   } catch(e){ /* silent fail on poll */ }
-}, 30000);
+}, 10000);
 </script>
 </body>
 </html>
