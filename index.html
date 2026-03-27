@@ -113,6 +113,28 @@ body{background:var(--bg);color:var(--text);font-family:'DM Sans',sans-serif;fon
 .task-card.done{opacity:.42;}
 .task-card.done .task-text{text-decoration:line-through;color:var(--text-mute);}
 .task-card.prio-high{border-left:3px solid var(--c-drag);}
+.task-card.due-soon{border-left:3px solid #DD6B20;}
+.due-badge{font-size:10px;font-weight:600;padding:2px 7px;border-radius:3px;white-space:nowrap;}
+.due-badge.overdue{background:#FFF0EE;color:#C53030;border:1px solid #FEB2B2;}
+.due-badge.soon{background:#FFFBEB;color:#B7791F;border:1px solid #FAD083;}
+.due-badge.ok{background:#F0FFF4;color:#276749;border:1px solid #9AE6B4;}
+
+/* COMMS SECTION */
+.comms-card{background:var(--surface);border:1px solid var(--border);border-radius:6px;margin-bottom:5px;padding:12px 14px;animation:fadeUp .16s ease;}
+.comms-card:hover{border-color:#B8C4D0;box-shadow:0 1px 8px rgba(28,43,58,.06);}
+.comms-card-header{display:flex;align-items:flex-start;gap:10px;}
+.comms-source{font-size:10px;font-weight:600;letter-spacing:.06em;text-transform:uppercase;padding:2px 8px;border-radius:3px;white-space:nowrap;flex-shrink:0;}
+.comms-source.slack{background:#ECF3FE;color:#1A3F6F;border:1px solid #90C2E7;}
+.comms-source.gmail{background:#FFF0EE;color:#742020;border:1px solid #F8A8A8;}
+.comms-body{flex:1;min-width:0;}
+.comms-from{font-size:13px;font-weight:500;color:var(--text);}
+.comms-subject{font-size:12px;color:var(--text-mid);margin-top:2px;line-height:1.4;word-break:break-word;}
+.comms-meta{font-size:11px;color:var(--text-mute);margin-top:4px;}
+.comms-action{font-size:11px;font-weight:500;color:var(--navy);text-decoration:none;display:inline-block;margin-top:6px;padding:3px 10px;border:1px solid var(--border);border-radius:4px;transition:all .12s;}
+.comms-action:hover{background:var(--navy);color:#fff;}
+.comms-loading{text-align:center;padding:20px;color:var(--text-mute);font-size:13px;}
+.comms-refresh{font-size:11px;color:var(--text-mute);background:none;border:none;cursor:pointer;font-family:'DM Sans',sans-serif;transition:color .12s;}
+.comms-refresh:hover{color:var(--navy);}
 .task-card.dragging{opacity:.35;border:1.5px dashed var(--navy);box-shadow:none !important;}
 .task-card.drag-over-above{border-top:2.5px solid var(--navy) !important;}
 .task-card.drag-over-below{border-bottom:2.5px solid var(--navy) !important;}
@@ -207,6 +229,7 @@ body{background:var(--bg);color:var(--text);font-family:'DM Sans',sans-serif;fon
     <span class="nav-link" onclick="setFilter('solarwinds')">SolarWinds</span>
     <span class="nav-link" onclick="setFilter('sourcing')">Sourcing</span>
     <span class="nav-link" onclick="setFilter('personal')">Personal</span>
+    <span class="nav-link" onclick="setFilter('comms')">Comms</span>
     <span class="nav-badge hl" id="topBadge">— open</span>
     <span class="nav-status"><span class="status-dot loading" id="statusDot"></span><span id="statusTxt">Connecting…</span></span>
   </div>
@@ -233,6 +256,11 @@ body{background:var(--bg);color:var(--text);font-family:'DM Sans',sans-serif;fon
   <div class="nav-item sub" onclick="setFilter('health')" id="nav-health"><div class="nav-dot" style="background:var(--c-hlt-bd)"></div>Health<span class="nav-count" id="cnt-health">—</span></div>
   <div class="nav-item sub" onclick="setFilter('food')" id="nav-food"><div class="nav-dot" style="background:var(--c-fod-bd)"></div>Food<span class="nav-count" id="cnt-food">—</span></div>
   <div class="nav-item sub" onclick="setFilter('errands')" id="nav-errands"><div class="nav-dot" style="background:var(--c-err-bd)"></div>Errands<span class="nav-count" id="cnt-errands">—</span></div>
+  <div class="sidebar-label">Communications</div>
+  <div class="nav-item" onclick="setFilter('comms')" id="nav-comms"><div class="nav-dot" style="background:#C53030"></div>All Comms<span class="nav-count" id="cnt-comms">—</span></div>
+  <div class="nav-item sub" onclick="setFilter('slack')" id="nav-slack"><div class="nav-dot" style="background:#2B6CB0"></div>Slack<span class="nav-count" id="cnt-slack">—</span></div>
+  <div class="nav-item sub" onclick="setFilter('gmail')" id="nav-gmail"><div class="nav-dot" style="background:#C53030"></div>Gmail<span class="nav-count" id="cnt-gmail">—</span></div>
+
   <div class="sidebar-footer">
     <div class="footer-date" id="fDate"></div>
     <div class="footer-time" id="fTime"></div>
@@ -331,7 +359,7 @@ body{background:var(--bg);color:var(--text);font-family:'DM Sans',sans-serif;fon
           <div class="mfi"><label>Owner / Working With</label><input type="text" id="mOwner" placeholder="e.g. Tommy, Arush…"/></div>
         </div>
         <div class="modal-field" style="margin-top:10px">
-          <div class="mfi"><label>Due Date</label><input type="date" id="mDue"/></div>
+          <div class="mfi"><label>Due Date <span style="color:var(--c-drag);font-size:10px">(auto-high if ≤2 days)</span></label><input type="date" id="mDue"/></div>
           <div class="mfi"><label>Context / Deadline</label><input type="text" id="mContext" placeholder="e.g. before Tuesday call"/></div>
         </div>
       </div>
@@ -472,6 +500,9 @@ const PAGES={
   health:{eyebrow:'Personal ↳',title:'Health',sub:'Workout plan · weight loss goal'},
   food:{eyebrow:'Personal ↳',title:'Food',sub:'Meal prep · low-cal grocery list'},
   errands:{eyebrow:'Personal ↳',title:'Errands',sub:'To-dos & logistics'},
+  comms:{eyebrow:'Communications',title:'Inbox',sub:'Slack messages & emails needing your attention'},
+  slack:{eyebrow:'Communications ↳',title:'Slack',sub:'Messages needing a response'},
+  gmail:{eyebrow:'Communications ↳',title:'Gmail',sub:'Emails needing a response'},
 };
 
 /* ── STATE ────────────────────────────────────────────────────────────── */
@@ -479,6 +510,86 @@ let tasks=[], filter='all', editingId=null;
 const LS_NOTES='tr_supabase_notes';
 
 /* ── INIT ─────────────────────────────────────────────────────────────── */
+/* ── COMMS STATE ─────────────────────────────────────────────────────── */
+let commsItems = [];
+let commsLoaded = false;
+
+async function loadComms(){
+  commsLoaded = false;
+  const items = [];
+  
+  // Pull from Anthropic API using Claude to fetch Slack + Gmail via MCP
+  // We'll call our own backend endpoint that Claude manages
+  // For now, store comms as structured items we inject via Claude
+  // Items format: {id, source:'slack'|'gmail', from, subject, preview, url, ts, needsResponse:true}
+  commsItems = items;
+  commsLoaded = true;
+}
+
+function renderComms(subfilter){
+  document.getElementById('loadingScreen').style.display='none';
+  document.getElementById('mainContent').style.display='block';
+  
+  const list = document.getElementById('taskList');
+  
+  // Filter by subfilter
+  const filtered = subfilter==='comms' ? commsItems : commsItems.filter(c=>c.source===subfilter);
+  
+  // Update counts
+  document.getElementById('cnt-comms').textContent = commsItems.length;
+  document.getElementById('cnt-slack').textContent = commsItems.filter(c=>c.source==='slack').length;
+  document.getElementById('cnt-gmail').textContent = commsItems.filter(c=>c.source==='gmail').length;
+  
+  if(!commsLoaded || commsItems.length===0){
+    list.innerHTML = `<div class="comms-loading">
+      <div style="font-size:32px;margin-bottom:12px">📬</div>
+      <div style="font-weight:500;color:var(--text);margin-bottom:6px">No items yet</div>
+      <div>Open this conversation with Claude and ask for your morning or evening briefing — Claude will pull your Slack messages and emails and populate this section automatically.</div>
+    </div>`;
+    return;
+  }
+  
+  let html = '<div class="sec-hdr"><span class="sec-title">Needs Your Attention</span><div class="sec-line"></div>';
+  html += `<button class="comms-refresh" onclick="loadComms().then(()=>renderComms('${subfilter}'))">↻ Refresh</button>`;
+  html += '</div>';
+  
+  filtered.forEach(item => {
+    html += `<div class="comms-card">
+      <div class="comms-card-header">
+        <span class="comms-source ${item.source}">${item.source==='slack'?'Slack':'Gmail'}</span>
+        <div class="comms-body">
+          <div class="comms-from">${esc(item.from)}</div>
+          <div class="comms-subject">${esc(item.subject)}</div>
+          <div class="comms-meta">${esc(item.preview||'')}</div>
+          ${item.url?`<a class="comms-action" href="${item.url}" target="_blank">Open ↗</a>`:''}
+        </div>
+      </div>
+    </div>`;
+  });
+  
+  list.innerHTML = html;
+  
+  // Update stats
+  document.getElementById('sOpen').textContent = filtered.length;
+  document.getElementById('sHigh').textContent = '—';
+  document.getElementById('sDone').textContent = '—';
+  document.getElementById('sTotal').textContent = filtered.length;
+}
+
+/* ── INJECT COMMS (called by Claude via Supabase or direct) ─────────────── */
+// Claude writes comms items to a separate Supabase table: comms_items
+// This function loads them
+async function loadCommsFromSupabase(){
+  try{
+    const rows = await sb('GET','comms_items?order=ts.desc');
+    if(rows) commsItems = rows;
+    commsLoaded = true;
+    document.getElementById('cnt-comms').textContent = commsItems.length;
+    document.getElementById('cnt-slack').textContent = commsItems.filter(c=>c.source==='slack').length;
+    document.getElementById('cnt-gmail').textContent = commsItems.filter(c=>c.source==='gmail').length;
+  } catch(e){ /* comms table may not exist yet */ }
+}
+
 async function init(){
   setDateTime();
   try {
@@ -498,6 +609,7 @@ async function init(){
     document.getElementById('mainContent').style.display='block';
     try{document.getElementById('dailyNotes').value=localStorage.getItem(LS_NOTES)||'';}catch(e){}
     render();
+  await loadCommsFromSupabase();
   } catch(e){
     setStatus('err','Connection error');
     document.getElementById('loadingScreen').innerHTML=`<div style="color:var(--c-drag);font-size:14px;">⚠ Could not connect to Supabase.<br><small style="color:var(--text-mute)">${e.message}</small></div>`;
@@ -533,7 +645,11 @@ function setFilter(f){
   document.getElementById('pgEyebrow').textContent=p.eyebrow;
   document.getElementById('pgTitle').textContent=p.title;
   document.getElementById('pgSub').textContent=p.sub;
-  render();
+  if(f==='comms'||f==='slack'||f==='gmail'){
+    renderComms(f);
+  } else {
+    render();
+  }
 }
 
 /* ── ADD TASK ─────────────────────────────────────────────────────────── */
@@ -768,12 +884,27 @@ function cardHTML(t,isDone){
   const c=CATS[t.cat]||CATS.financial;
   const pLabel=t.priority==='high'?'↑ High':t.priority==='low'?'↓ Low':'Normal';
   const pClass=t.priority==='high'?'high':'';
-  const hlBorder=!isDone&&t.priority==='high'?' prio-high':'';
+  // auto-high if due within 2 days
+  let effectivePrio = t.priority;
+  if(t.due && !t.done){
+    const days=Math.ceil((new Date(t.due).getTime()-Date.now())/(1000*60*60*24));
+    if(days<=2) effectivePrio='high';
+  }
+  const hlBorder=!isDone&&effectivePrio==='high'?' prio-high':(t.due&&!t.done&&Math.ceil((new Date(t.due).getTime()-Date.now())/(1000*60*60*24))<=2?' due-soon':'');
   const hasNotes=t.notes&&t.notes.length>0;
   let dateStr=fmtDate(t.created)?`Added ${fmtDate(t.created)}`:'';
   if(t.done&&t.completed)dateStr+=` · Done ${fmtDate(t.completed)}`;
   if(t.owner)dateStr+=(dateStr?' · ':'')+`With: ${t.owner}`;
-  if(t.due)dateStr+=(dateStr?' · ':'')+`Due: ${t.due}`;
+  // Due date badge
+  let dueBadge='';
+  if(t.due && !t.done){
+    const dueMs=new Date(t.due).getTime();
+    const now=Date.now();
+    const days=Math.ceil((dueMs-now)/(1000*60*60*24));
+    if(days<0) dueBadge=`<span class="due-badge overdue">Overdue ${Math.abs(days)}d</span>`;
+    else if(days<=2) dueBadge=`<span class="due-badge soon">Due in ${days}d</span>`;
+    else dueBadge=`<span class="due-badge ok">Due ${t.due}</span>`;
+  }
   const parentCat=c.parent;
   let tagLabel=c.label;
   if(parentCat&&CATS[parentCat])tagLabel=CATS[parentCat].label+' / '+c.label;
@@ -792,6 +923,7 @@ function cardHTML(t,isDone){
           <span class="cat-tag" style="background:${c.bg};border-color:${c.bd};color:${c.tx}">${tagLabel}</span>
           <span class="prio-tag ${pClass}" onclick="event.stopPropagation();cyclePrio('${t.id}')">${pLabel}</span>
           ${dateStr?`<span class="meta-date">${esc(dateStr)}</span>`:''}
+          ${dueBadge}
         </div>
       </div>
       <div class="task-ctrl">${actionCtrl}</div>
@@ -814,6 +946,7 @@ setInterval(async () => {
     if(newJson !== oldJson){
       tasks = rows;
       render();
+      await loadCommsFromSupabase();
       // flash status briefly
       setStatus('ok','Updated');
       setTimeout(()=>setStatus('ok','Live'),1500);
