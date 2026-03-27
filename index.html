@@ -713,8 +713,9 @@ function renderSchedule(filterMode){
 function schedBlockHTML(item){
   const hasNotes=item.notes&&item.notes.trim().length>0;
   const typeLabel={meeting:'Meeting',focus:'Focus',block:'Block',break:'Break',health:'Health',personal:'Personal',swi:'SolarWinds',travel:'Travel',ooo:'OOO',admin:'Admin',task:'Task',free:'Free',declined:'Declined'}[item.type]||item.type;
+  const endShow = item.time_end && item.time_end!=='23:59' && item.time_end!=='11:59 PM' && item.time_end!=='12:00 AM';
   return `<div class="sched-block type-${item.type}" id="sb-${item.id}" onclick="schedToggleNotes('${item.id}')">
-    <span class="sched-time">${item.time_start}${item.time_end&&item.time_end!=='23:59'?'<br>'+item.time_end:''}</span>
+    <span class="sched-time">${item.time_start}${endShow?'<br>→ '+item.time_end:''}</span>
     <span class="sched-type-dot"></span>
     <div class="sched-content">
       <div class="sched-title">${esc(item.title)}</div>
