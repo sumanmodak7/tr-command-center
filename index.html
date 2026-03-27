@@ -597,7 +597,7 @@ let schedDayFilter = 'all';
 
 async function loadScheduleFromSupabase(){
   try{
-    const rows = await sb('GET','schedule_items?order=day.asc,sort_order.asc');
+    const rows = await sb('GET','schedule_items?order=day.asc,sort_order.asc,time_start.asc');
     if(rows){ scheduleItems=rows; scheduleLoaded=true; }
   } catch(e){ /* silent */ }
 }
@@ -639,6 +639,17 @@ function renderSchedule(filterMode){
   }
 
   // Group by day
+  // Parse time string like "8:30 AM" to sortable number
+  function timeToMins(t){
+    if(!t) return 0;
+    const m=t.match(/(\d+):(\d+)\s*(AM|PM)/i);
+    if(!m) return 0;
+    let h=parseInt(m[1]),min=parseInt(m[2]),ap=m[3].toUpperCase();
+    if(ap==='PM'&&h!==12) h+=12;
+    if(ap==='AM'&&h===12) h=0;
+    return h*60+min;
+  }
+
   const byDay={};
   scheduleItems.forEach(item=>{
     if(!byDay[item.day]) byDay[item.day]=[];
@@ -683,7 +694,7 @@ function renderSchedule(filterMode){
   const visibleDays=schedDayFilter==='all'?days:[schedDayFilter].filter(d=>byDay[d]);
 
   visibleDays.forEach(day=>{
-    const items=byDay[day]||[];
+    const items=(byDay[day]||[]).slice().sort((a,b)=>timeToMins(a.time_start)-timeToMins(b.time_start));
     const {name,date}=fmtDayHeader(day);
     const badge=getDayBadge(day,items);
     const meetingCount=items.filter(i=>meetingTypes.includes(i.type)).length;
