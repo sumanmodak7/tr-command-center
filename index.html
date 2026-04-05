@@ -283,6 +283,55 @@ body{background:var(--bg);color:var(--text);font-family:'DM Sans',sans-serif;fon
 .sched-add-btn{background:var(--navy);border:none;border-radius:4px;color:#fff;font-family:'DM Sans',sans-serif;font-size:11px;font-weight:600;letter-spacing:.06em;text-transform:uppercase;padding:7px 16px;cursor:pointer;transition:opacity .12s;margin-left:auto;}
 .sched-add-btn:hover{opacity:.85;}
 
+
+/* ── NOTES ────────────────────────────────────────────────────────────── */
+.notes-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(280px,1fr));gap:14px;margin-top:4px;}
+.note-card{background:var(--surface);border:1px solid var(--border);border-radius:6px;padding:16px 18px;cursor:pointer;transition:border-color .12s,box-shadow .12s;position:relative;animation:fadeUp .15s ease;}
+.note-card:hover{border-color:#B8C4D0;box-shadow:0 2px 12px rgba(28,43,58,.07);}
+.note-card.pinned{border-left:3px solid var(--navy);}
+.note-card-title{font-size:14px;font-weight:600;color:var(--text);margin-bottom:6px;line-height:1.3;}
+.note-card-body{font-size:12px;color:var(--text-mid);line-height:1.55;max-height:80px;overflow:hidden;white-space:pre-wrap;word-break:break-word;}
+.note-card-meta{display:flex;align-items:center;gap:8px;margin-top:10px;flex-wrap:wrap;}
+.note-tag{font-size:10px;font-weight:600;letter-spacing:.04em;text-transform:uppercase;padding:2px 7px;border-radius:3px;background:var(--bg);border:1px solid var(--border);color:var(--text-mute);}
+.note-date{font-size:11px;color:var(--text-mute);margin-left:auto;}
+.note-pin-btn{position:absolute;top:10px;right:10px;background:none;border:none;cursor:pointer;color:var(--border);font-size:14px;transition:color .12s;padding:2px;}
+.note-pin-btn:hover,.note-pin-btn.on{color:var(--navy);}
+.note-del-btn{position:absolute;top:10px;right:32px;background:none;border:none;cursor:pointer;color:var(--border);font-size:14px;transition:color .12s;padding:2px;opacity:0;}
+.note-card:hover .note-del-btn{opacity:1;}
+.note-del-btn:hover{color:var(--c-drag);}
+
+/* Note editor modal */
+.note-editor{display:none;position:fixed;inset:0;background:rgba(28,43,58,.45);z-index:200;align-items:center;justify-content:center;padding:24px;}
+.note-editor.open{display:flex;}
+.note-editor-inner{background:var(--surface);border-radius:8px;width:100%;max-width:680px;max-height:90vh;display:flex;flex-direction:column;box-shadow:0 20px 60px rgba(28,43,58,.25);animation:modalIn .18s ease;}
+.note-editor-header{background:var(--navy);padding:16px 20px;border-radius:8px 8px 0 0;display:flex;align-items:center;gap:12px;}
+.note-editor-header input{flex:1;background:transparent;border:none;border-bottom:1.5px solid rgba(255,255,255,.3);color:#fff;font-family:'Playfair Display',serif;font-size:18px;font-weight:600;padding:4px 2px;outline:none;}
+.note-editor-header input::placeholder{color:rgba(255,255,255,.45);}
+.note-editor-header input:focus{border-bottom-color:rgba(255,255,255,.7);}
+.note-editor-tags{padding:10px 20px 0;display:flex;align-items:center;gap:8px;}
+.note-editor-tags input{flex:1;background:var(--bg);border:1px solid var(--border);border-radius:4px;color:var(--text);font-family:'DM Sans',sans-serif;font-size:12px;padding:6px 10px;outline:none;}
+.note-editor-tags input::placeholder{color:var(--text-mute);}
+.note-editor-tags input:focus{border-color:var(--navy);}
+.note-editor-tags label{font-size:11px;font-weight:600;letter-spacing:.06em;text-transform:uppercase;color:var(--text-mute);white-space:nowrap;}
+.note-editor-body{flex:1;overflow-y:auto;}
+.note-editor-body textarea{width:100%;min-height:320px;background:transparent;border:none;color:var(--text);font-family:'DM Sans',sans-serif;font-size:14px;line-height:1.65;padding:16px 20px;resize:none;outline:none;}
+.note-editor-body textarea::placeholder{color:var(--text-mute);}
+.note-editor-footer{padding:12px 20px;border-top:1px solid var(--border-l);display:flex;align-items:center;gap:10px;}
+.note-editor-footer .meta{font-size:11px;color:var(--text-mute);flex:1;}
+.note-extract-btn{background:var(--bg);border:1px solid var(--border);border-radius:4px;color:var(--text-mid);font-family:'DM Sans',sans-serif;font-size:11px;font-weight:600;letter-spacing:.05em;text-transform:uppercase;padding:7px 14px;cursor:pointer;transition:all .12s;}
+.note-extract-btn:hover{border-color:var(--navy);color:var(--navy);}
+.note-save-btn{background:var(--navy);border:none;border-radius:4px;color:#fff;font-family:'DM Sans',sans-serif;font-size:11px;font-weight:600;letter-spacing:.05em;text-transform:uppercase;padding:8px 20px;cursor:pointer;transition:opacity .12s;}
+.note-save-btn:hover{opacity:.85;}
+.notes-empty{text-align:center;padding:60px 20px;color:var(--text-mute);}
+.notes-empty .empty-icon{font-size:40px;margin-bottom:16px;}
+.notes-empty .empty-title{font-size:16px;font-weight:600;color:var(--text);margin-bottom:8px;}
+.notes-search{display:flex;gap:10px;margin-bottom:20px;align-items:center;}
+.notes-search input{flex:1;background:var(--surface);border:1px solid var(--border);border-radius:5px;color:var(--text);font-family:'DM Sans',sans-serif;font-size:13px;padding:9px 14px;outline:none;transition:border-color .12s;}
+.notes-search input:focus{border-color:var(--navy);}
+.notes-search input::placeholder{color:var(--text-mute);}
+.notes-new-btn{background:var(--navy);border:none;border-radius:5px;color:#fff;font-family:'DM Sans',sans-serif;font-size:12px;font-weight:600;letter-spacing:.06em;text-transform:uppercase;padding:9px 20px;cursor:pointer;transition:opacity .12s;white-space:nowrap;}
+.notes-new-btn:hover{opacity:.85;}
+
 ::-webkit-scrollbar{width:5px;}
 ::-webkit-scrollbar-track{background:transparent;}
 ::-webkit-scrollbar-thumb{background:var(--border);border-radius:3px;}
@@ -302,6 +351,7 @@ body{background:var(--bg);color:var(--text);font-family:'DM Sans',sans-serif;fon
     <span class="nav-link" onclick="setFilter('solarwinds')">SolarWinds</span>
     <span class="nav-link" onclick="setFilter('sourcing')">Sourcing</span>
     <span class="nav-link" onclick="setFilter('personal')">Personal</span>
+    <span class="nav-link" onclick="setFilter('notes')">Notes</span>
     <span class="nav-link" onclick="setFilter('schedule')">Schedule</span>
     <span class="nav-link" onclick="setFilter('comms')">Comms</span>
     <span class="nav-badge hl" id="topBadge">— open</span>
@@ -330,6 +380,8 @@ body{background:var(--bg);color:var(--text);font-family:'DM Sans',sans-serif;fon
   <div class="nav-item sub" onclick="setFilter('health')" id="nav-health"><div class="nav-dot" style="background:var(--c-hlt-bd)"></div>Health<span class="nav-count" id="cnt-health">—</span></div>
   <div class="nav-item sub" onclick="setFilter('food')" id="nav-food"><div class="nav-dot" style="background:var(--c-fod-bd)"></div>Food<span class="nav-count" id="cnt-food">—</span></div>
   <div class="nav-item sub" onclick="setFilter('errands')" id="nav-errands"><div class="nav-dot" style="background:var(--c-err-bd)"></div>Errands<span class="nav-count" id="cnt-errands">—</span></div>
+  <div class="sidebar-label">Notes</div>
+  <div class="nav-item" onclick="setFilter('notes')" id="nav-notes"><div class="nav-dot" style="background:#553C9A"></div>All Notes<span class="nav-count" id="cnt-notes">—</span></div>
   <div class="sidebar-label">Schedule</div>
   <div class="nav-item" onclick="setFilter('schedule')" id="nav-schedule"><div class="nav-dot" style="background:#805AD5"></div>Week View<span class="nav-count" id="cnt-schedule"></span></div>
   <div class="nav-item sub" onclick="setFilter('schedule_today')" id="nav-schedule_today"><div class="nav-dot" style="background:#805AD5"></div>Today<span class="nav-count" id="cnt-schedule_today"></span></div>
@@ -399,6 +451,28 @@ body{background:var(--bg);color:var(--text);font-family:'DM Sans',sans-serif;fon
     </div>
   </div>
 </main>
+</div>
+
+<!-- NOTE EDITOR -->
+<div class="note-editor" id="noteEditor" onclick="maybeCloseNoteEditor(event)">
+  <div class="note-editor-inner" id="noteEditorInner">
+    <div class="note-editor-header">
+      <input type="text" id="neTitle" placeholder="Note title…"/>
+      <button class="modal-close" onclick="closeNoteEditor()" style="background:rgba(255,255,255,.12)">✕</button>
+    </div>
+    <div class="note-editor-tags">
+      <label>Tags</label>
+      <input type="text" id="neTags" placeholder="swi, invera, sourcing… (comma separated)"/>
+    </div>
+    <div class="note-editor-body">
+      <textarea id="neBody" placeholder="Start typing… Markdown-friendly. Use for meeting notes, research, ideas, anything."></textarea>
+    </div>
+    <div class="note-editor-footer">
+      <span class="meta" id="neMeta"></span>
+      <button class="note-extract-btn" onclick="extractTasksFromNote()">⚡ Extract Tasks</button>
+      <button class="note-save-btn" onclick="saveNote()">Save Note</button>
+    </div>
+  </div>
 </div>
 
 <!-- MODAL -->
@@ -577,6 +651,7 @@ const PAGES={
   health:{eyebrow:'Personal ↳',title:'Health',sub:'Workout plan · weight loss goal'},
   food:{eyebrow:'Personal ↳',title:'Food',sub:'Meal prep · low-cal grocery list'},
   errands:{eyebrow:'Personal ↳',title:'Errands',sub:'To-dos & logistics'},
+  notes:{eyebrow:'Notes',title:'Notes',sub:'Scratch pad · meeting notes · research · ideas'},
   schedule:{eyebrow:'Schedule',title:'Week View',sub:'Mar 27 – Apr 2 · Fri–Thu'},
   schedule_today:{eyebrow:'Schedule',title:'Today',sub:''},
   comms:{eyebrow:'Communications',title:'Inbox',sub:'Slack messages & emails needing your attention'},
@@ -589,6 +664,189 @@ let tasks=[], filter='all', editingId=null;
 const LS_NOTES='tr_supabase_notes';
 
 /* ── INIT ─────────────────────────────────────────────────────────────── */
+/* ── NOTES STATE ─────────────────────────────────────────────────────── */
+let notesItems = [];
+let notesLoaded = false;
+let editingNoteId = null;
+let notesSearchQ = '';
+
+async function loadNotesFromSupabase(){
+  try{
+    const rows = await sb('GET','notes?order=pinned.desc,updated_at.desc');
+    if(rows){ notesItems=rows; notesLoaded=true;
+      document.getElementById('cnt-notes').textContent=rows.length||'';
+    }
+  } catch(e){}
+}
+
+function renderNotes(){
+  document.getElementById('loadingScreen').style.display='none';
+  document.getElementById('mainContent').style.display='block';
+  const list = document.getElementById('taskList');
+
+  // Stats
+  document.getElementById('sOpen').textContent=notesItems.length;
+  document.getElementById('sHigh').textContent=notesItems.filter(n=>n.pinned).length+' pinned';
+  document.getElementById('sDone').textContent='—';
+  document.getElementById('sTotal').textContent=notesItems.length;
+
+  let filtered = notesItems;
+  if(notesSearchQ){
+    const q=notesSearchQ.toLowerCase();
+    filtered=notesItems.filter(n=>(n.title||'').toLowerCase().includes(q)||(n.body||'').toLowerCase().includes(q)||(n.tags||'').toLowerCase().includes(q));
+  }
+
+  let html = `<div class="notes-search">
+    <input type="text" placeholder="Search notes…" value="${esc(notesSearchQ)}" oninput="notesSearchQ=this.value;renderNotes()" id="notesSearchInput"/>
+    <button class="notes-new-btn" onclick="openNoteEditor()">+ New Note</button>
+  </div>`;
+
+  if(!notesLoaded||filtered.length===0){
+    if(notesSearchQ){
+      html += '<div class="empty">No notes match your search.</div>';
+    } else {
+      html += `<div class="notes-empty">
+        <div class="empty-icon">📝</div>
+        <div class="empty-title">No notes yet</div>
+        <div>Hit + New Note to start. Use this instead of OneNote — meeting notes, research, ideas, deal context, anything.</div>
+      </div>`;
+    }
+    list.innerHTML = html;
+    return;
+  }
+
+  html += '<div class="notes-grid">';
+  filtered.forEach(note => {
+    const tags = (note.tags||'').split(',').map(t=>t.trim()).filter(Boolean);
+    const date = note.updated_at ? new Date(note.updated_at).toLocaleDateString('en-US',{month:'short',day:'numeric'}) : '';
+    const preview = (note.body||'').slice(0,160).replace(/
+/g,' ');
+    html += `<div class="note-card${note.pinned?' pinned':''}" onclick="openNoteEditor('${note.id}')">
+      <button class="note-del-btn" onclick="event.stopPropagation();deleteNote('${note.id}')" title="Delete">✕</button>
+      <button class="note-pin-btn${note.pinned?' on':''}" onclick="event.stopPropagation();togglePinNote('${note.id}')" title="${note.pinned?'Unpin':'Pin'}">📌</button>
+      <div class="note-card-title">${esc(note.title||'Untitled')}</div>
+      <div class="note-card-body">${esc(preview)}</div>
+      <div class="note-card-meta">
+        ${tags.map(t=>`<span class="note-tag">${esc(t)}</span>`).join('')}
+        <span class="note-date">${date}</span>
+      </div>
+    </div>`;
+  });
+  html += '</div>';
+  list.innerHTML = html;
+}
+
+function openNoteEditor(id){
+  if(id){
+    const note = notesItems.find(n=>n.id===id); if(!note) return;
+    editingNoteId = id;
+    document.getElementById('neTitle').value = note.title||'';
+    document.getElementById('neBody').value = note.body||'';
+    document.getElementById('neTags').value = note.tags||'';
+    const d = note.updated_at ? new Date(note.updated_at).toLocaleString('en-US',{month:'short',day:'numeric',hour:'numeric',minute:'2-digit'}) : '';
+    document.getElementById('neMeta').textContent = d ? 'Last edited '+d : '';
+  } else {
+    editingNoteId = null;
+    document.getElementById('neTitle').value = '';
+    document.getElementById('neBody').value = '';
+    document.getElementById('neTags').value = '';
+    document.getElementById('neMeta').textContent = '';
+  }
+  document.getElementById('noteEditor').classList.add('open');
+  setTimeout(()=>document.getElementById(editingNoteId?'neBody':'neTitle').focus(),100);
+}
+
+function closeNoteEditor(){ document.getElementById('noteEditor').classList.remove('open'); editingNoteId=null; }
+function maybeCloseNoteEditor(e){ if(e.target===document.getElementById('noteEditor')) closeNoteEditor(); }
+
+async function saveNote(){
+  const title = document.getElementById('neTitle').value.trim()||'Untitled';
+  const body = document.getElementById('neBody').value.trim();
+  const tags = document.getElementById('neTags').value.trim();
+  const now = new Date().toISOString();
+
+  if(editingNoteId){
+    const note = notesItems.find(n=>n.id===editingNoteId);
+    if(note){ note.title=title; note.body=body; note.tags=tags; note.updated_at=now; }
+    closeNoteEditor(); renderNotes();
+    try{ await sb('PATCH',`notes?id=eq.${editingNoteId}`,{title,body,tags,updated_at:now}); }
+    catch(e){ setStatus('err','Save failed'); }
+  } else {
+    const newNote = {id:'note_'+Date.now(),title,body,tags,pinned:false,created_at:now,updated_at:now};
+    notesItems.unshift(newNote);
+    document.getElementById('cnt-notes').textContent=notesItems.length;
+    closeNoteEditor(); renderNotes();
+    try{ await sb('POST','notes',[newNote]); }
+    catch(e){ setStatus('err','Save failed'); }
+  }
+}
+
+async function deleteNote(id){
+  if(!confirm('Delete this note?')) return;
+  notesItems = notesItems.filter(n=>n.id!==id);
+  document.getElementById('cnt-notes').textContent=notesItems.length||'';
+  renderNotes();
+  try{ await sb('DELETE',`notes?id=eq.${id}`); } catch(e){}
+}
+
+async function togglePinNote(id){
+  const note = notesItems.find(n=>n.id===id); if(!note) return;
+  note.pinned = !note.pinned;
+  // Re-sort: pinned first
+  notesItems.sort((a,b)=>(b.pinned?1:0)-(a.pinned?1:0));
+  renderNotes();
+  try{ await sb('PATCH',`notes?id=eq.${id}`,{pinned:note.pinned}); } catch(e){}
+}
+
+async function extractTasksFromNote(){
+  const title = document.getElementById('neTitle').value.trim();
+  const body = document.getElementById('neBody').value.trim();
+  if(!body){ alert('Add some note content first.'); return; }
+
+  const btn = document.querySelector('.note-extract-btn');
+  btn.textContent = '⏳ Extracting…'; btn.disabled = true;
+
+  // Simple client-side extraction: look for lines starting with action words or - [ ]
+  const actionWords = /^([-•*]\s*\[?\s*\]?\s*|todo:?|action:?|follow up:?|send|call|review|build|update|check|confirm|schedule|discuss|respond|write|draft|prepare|create|ask|get|finish|complete)/i;
+  const lines = body.split('\n').map(l=>l.trim()).filter(Boolean);
+  const candidates = lines.filter(l=>actionWords.test(l));
+
+  if(candidates.length===0){
+    btn.textContent='⚡ Extract Tasks'; btn.disabled=false;
+    alert('No clear action items found. Try starting lines with action verbs or checkboxes.');
+    return;
+  }
+
+  // Show preview
+  const preview = candidates.slice(0,8).map(c=>c.replace(/^[-•*]\s*\[?\s*\]?\s*/,'')).join('\n');
+  const confirmed = confirm(`Found ${candidates.length} potential task(s):\n\n${preview}\n\nAdd these to your task list?`);
+
+  if(confirmed){
+    const now = Date.now();
+    const newTasks = candidates.slice(0,10).map((c,i)=>({
+      id:'nt_'+now+'_'+i,
+      cat:'solarwinds', // default — user can change
+      priority:'normal',
+      text:c.replace(/^[-•*]\s*\[?\s*\]?\s*/,'').slice(0,200),
+      owner:'',done:false,created:now,completed:null,
+      due:'',context:`Extracted from note: ${title||'Untitled'}`,notes:[],sort_order:999+i
+    }));
+    tasks = [...newTasks, ...tasks];
+    render();
+    try{ await sb('POST','tasks',newTasks); setStatus('ok',`Added ${newTasks.length} tasks`); }
+    catch(e){ setStatus('err','Task save failed'); }
+  }
+
+  btn.textContent='⚡ Extract Tasks'; btn.disabled=false;
+}
+
+// Ctrl+Enter to save note
+document.addEventListener('keydown',e=>{
+  if((e.ctrlKey||e.metaKey)&&e.key==='Enter'&&document.getElementById('noteEditor').classList.contains('open')){
+    saveNote();
+  }
+});
+
 /* ── SCHEDULE STATE ──────────────────────────────────────────────────── */
 let scheduleItems = [];
 let scheduleLoaded = false;
@@ -685,7 +943,8 @@ function renderSchedule(filterMode){
     days.forEach(d=>{
       const {name}=fmtDayHeader(d);
       const short=name.slice(0,3);
-      html+=`<button class="sched-nav-btn${schedDayFilter===d?' active':''}" onclick="schedFilterDay('${d}')">${short} ${new Date(d+'T12:00:00').getDate()}</button>`;
+      const isToday=d===todayStr();
+      html+=`<button class="sched-nav-btn${schedDayFilter===d?' active':''}${isToday?' '':''}" onclick="schedFilterDay('${d}')">${isToday?'<b>':''} ${short} ${new Date(d+'T12:00:00').getDate()}${isToday?'</b>':''}</button>`;
     });
   }
   html+=`<button class="sched-add-btn" onclick="schedAddBlock()">+ Add Block</button>`;
@@ -981,6 +1240,7 @@ async function init(){
     render();
   await loadCommsFromSupabase();
   await loadScheduleFromSupabase();
+  await loadNotesFromSupabase();
   } catch(e){
     setStatus('err','Connection error');
     document.getElementById('loadingScreen').innerHTML=`<div style="color:var(--c-drag);font-size:14px;">⚠ Could not connect to Supabase.<br><small style="color:var(--text-mute)">${e.message}</small></div>`;
@@ -1018,6 +1278,8 @@ function setFilter(f){
   document.getElementById('pgSub').textContent=p.sub;
   if(f==='comms'||f==='slack'||f==='gmail'){
     renderComms(f);
+  } else if(f==='notes'){
+    renderNotes();
   } else if(f==='schedule'||f==='schedule_today'){
     schedDayFilter='all';
     renderSchedule(f);
@@ -1312,22 +1574,50 @@ init();
 /* ── AUTO-POLL every 30s ─────────────────────────────────────────────── */
 setInterval(async () => {
   try {
-    const rows = await sb('GET','tasks?order=sort_order.asc,created.asc');
-    if(!rows) return;
-    // Only re-render if something actually changed
-    const newJson = JSON.stringify(rows);
-    const oldJson = JSON.stringify(tasks);
-    if(newJson !== oldJson){
-      tasks = rows;
-      if(['comms','slack','gmail'].includes(filter)) renderComms(filter);
-      else if(['schedule','schedule_today'].includes(filter)){await loadScheduleFromSupabase();renderSchedule(filter);}
-      else render();
-      await loadCommsFromSupabase();
-      // flash status briefly
-      setStatus('ok','Updated');
-      setTimeout(()=>setStatus('ok','Live'),1500);
+    // Poll all three data sources
+    const [taskRows, schedRows, commsRows, notesRows] = await Promise.all([
+      sb('GET','tasks?order=sort_order.asc,created.asc'),
+      sb('GET','schedule_items?order=day.asc,sort_order.asc,time_start.asc'),
+      sb('GET','comms_items?order=ts.desc'),
+      sb('GET','notes?order=pinned.desc,updated_at.desc'),
+    ]);
+
+    let tasksChanged=false, schedChanged=false, commsChanged=false;
+
+    if(taskRows && JSON.stringify(taskRows)!==JSON.stringify(tasks)){
+      tasks=taskRows; tasksChanged=true;
     }
-  } catch(e){ /* silent fail on poll */ }
+    if(schedRows && JSON.stringify(schedRows)!==JSON.stringify(scheduleItems)){
+      scheduleItems=schedRows; scheduleLoaded=true; schedChanged=true;
+    }
+    if(notesRows && JSON.stringify(notesRows)!==JSON.stringify(notesItems)){
+      notesItems=notesRows; notesLoaded=true;
+      document.getElementById('cnt-notes').textContent=notesItems.length||'';
+    }
+    if(commsRows && JSON.stringify(commsRows)!==JSON.stringify(commsItems)){
+      commsItems=commsRows; commsLoaded=true; commsChanged=true;
+    }
+
+    // Re-render current view if relevant data changed
+    if(filter==='notes') renderNotes();
+    else if(['comms','slack','gmail'].includes(filter)){
+      if(commsChanged||tasksChanged) renderComms(filter);
+    } else if(['schedule','schedule_today'].includes(filter)){
+      if(schedChanged||tasksChanged) renderSchedule(filter);
+    } else {
+      if(tasksChanged) render();
+    }
+
+    // Always keep sidebar counts fresh
+    if(commsChanged){
+      const nr=commsItems.filter(c=>c.needs_response);
+      document.getElementById('cnt-comms').textContent=nr.length;
+      document.getElementById('cnt-slack').textContent=nr.filter(c=>c.source==='slack').length;
+      document.getElementById('cnt-gmail').textContent=nr.filter(c=>c.source==='gmail').length;
+    }
+    if(tasksChanged||schedChanged) setStatus('ok','Updated ✓');
+    setTimeout(()=>setStatus('ok','Live'),2000);
+  } catch(e){ /* silent */ }
 }, 10000);
 </script>
 </body>
