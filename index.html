@@ -563,57 +563,7 @@ async function sb(method, path, body) {
 }
 
 /* ── SEED DATA (loaded on first run if DB is empty) ───────────────────── */
-const SEED = [
-  {id:'me2',cat:'mentorship',priority:'high',text:"Tuesday night: do Emily Chen's review — build summary one-pager for her",owner:'Emily Chen',done:true,created:1774245569273,completed:1774487790910,due:'',context:'',notes:[],sort_order:0},
-  {id:'so1',cat:'sourcing',priority:'high',text:'Use Claude sourcing platform — send 10 outbound emails (daily minimum)',owner:'',done:false,created:1774245572873,completed:null,due:'',context:'',notes:[],sort_order:1},
-  {id:'inv1',cat:'invera',priority:'high',text:'Research metal ERP TAM and vertical risks',owner:'',done:false,created:1774330000000,completed:null,due:'',context:'',notes:[],sort_order:2},
-  {id:'sw24',cat:'sourcing',priority:'high',text:'Review lender database',owner:'',done:false,created:1774490000010,completed:null,due:'',context:'',notes:[],sort_order:3},
-  {id:'sw15',cat:'solarwinds',priority:'high',text:'Send Chase expected HC incremental cost breakdown by department, role, and cost',owner:'Chase',done:false,created:1774380000001,completed:null,due:'',context:'',notes:[],sort_order:4},
-  {id:'sw16',cat:'solarwinds',priority:'high',text:'Review lender deck and make comments',owner:'',done:false,created:1774380000002,completed:null,due:'',context:'',notes:[],sort_order:5},
-  {id:'1774374404141',cat:'solarwinds',priority:'high',text:'Win-T Sub Renewals Dash Update',owner:'Mike',done:false,created:1774374404141,completed:null,due:'',context:'',notes:[{id:'nM1',text:'Topics to cover with Mike:\n1. Dropped $ on subs — understand what fell off and why\n2. Combined mixed dash — status and next steps',date:'Mar 25'}],sort_order:6},
-  {id:'sw17',cat:'solarwinds',priority:'high',text:'Check in with Tommy — Y2 PI stuff',owner:'Tommy',done:false,created:1774420000001,completed:null,due:'',context:'',notes:[{id:'nT1',text:'Separate from ARR audit (sw5). Focus specifically on Y2 price increase mechanics, what\'s tracking well vs at risk, and any data questions.',date:'Mar 25'}],sort_order:7},
-  {id:'sw25',cat:'solarwinds',priority:'high',text:'ARR audit with Andrew — reconcile ITOM orders with TJ Invoices',owner:'Andrew',done:false,created:1774490000011,completed:null,due:'',context:'',notes:[{id:'nSW25',text:'Work with Andrew to reconcile ITOM orders against TJ invoices. Key data integrity / ARR accuracy task.',date:'Mar 26'}],sort_order:8},
-  {id:'sw18',cat:'solarwinds',priority:'high',text:'Weekly dash updates — AK (burndown, cohort view, next steps)',owner:'Arush',done:false,created:1774420000002,completed:null,due:'',context:'',notes:[{id:'nAK1',text:'1. Burndown view — TOP PRIORITY\n2. By weeks from cohort end date view\n3. Next steps — add as a field/filter\n\nAK to build. Suman to review and give sign-off.',date:'Mar 25'}],sort_order:9},
-  {id:'sw19',cat:'solarwinds',priority:'high',text:'Conv dash updates — AK (stage filter, Andy idea, dropped, Q2 extension)',owner:'Arush',done:false,created:1774420000003,completed:null,due:'',context:'',notes:[{id:'nAK2',text:'1. By stage filter\n2. Andy\'s idea — save filter functionality\n3. Dropped by type\n4. Extend to Q2 for open $ and projected gaps\n5. Next steps as a filter\n6. Anything else?\n\nAK to build. Suman to review.',date:'Mar 25'}],sort_order:10},
-  {id:'sw23',cat:'solarwinds',priority:'high',text:'Build Tier 2 OpModel',owner:'',done:false,created:1774420000007,completed:null,due:'',context:'',notes:[{id:'nOP1',text:'Build the operational model for Tier 2. Clarify scope, inputs, and owner before starting.',date:'Mar 25'}],sort_order:11},
-  {id:'sw1',cat:'solarwinds',priority:'high',text:'Give Matt update on Expenses — clarify BTL, committed vs non-committed',owner:'Matt',done:true,created:1774245581273,completed:1774329309367,due:'',context:'',notes:[],sort_order:12},
-  {id:'sw6',cat:'solarwinds',priority:'high',text:'Build 3 slides highlighting cash flow scenarios',owner:'',done:false,created:1774245578273,completed:null,due:'',context:'',notes:[],sort_order:13},
-  {id:'sw7',cat:'solarwinds',priority:'high',text:'Post this week\'s pacing chart for conversion performance',owner:'',done:true,created:1774245577673,completed:1774407693141,due:'',context:'',notes:[],sort_order:14},
-  {id:'sw9',cat:'solarwinds',priority:'normal',text:'Post N&E dash for SWI',owner:'',done:false,created:1774245576473,completed:null,due:'',context:'',notes:[],sort_order:15},
-  {id:'sw3',cat:'solarwinds',priority:'low',text:'Update TR monthly template with Q4 data; add ACV without open assumption $',owner:'',done:false,created:1774245580073,completed:null,due:'',context:'',notes:[],sort_order:16},
-  {id:'sw4',cat:'solarwinds',priority:'high',text:'Send lender AI slides to Tim (CFO)',owner:'Eric',done:true,created:1774245579473,completed:1774373158757,due:'',context:'',notes:[],sort_order:17},
-  {id:'sw5',cat:'solarwinds',priority:'normal',text:'Audit the ARR data — spend time with Tommy getting familiar with it',owner:'Tommy',done:false,created:1774245578873,completed:null,due:'',context:'',notes:[],sort_order:18},
-  {id:'sw2',cat:'solarwinds',priority:'normal',text:'Finalize 2026 bonus plan for the company',owner:'',done:true,created:1774245580673,completed:1774329318438,due:'',context:'',notes:[],sort_order:19},
-  {id:'sw8',cat:'solarwinds',priority:'normal',text:'Post this week\'s pacing chart for sub performance',owner:'',done:true,created:1774245577073,completed:1774373213836,due:'',context:'',notes:[],sort_order:20},
-  {id:'sw10',cat:'solarwinds',priority:'normal',text:'Automate the 5 vector deck from Claude',owner:'',done:false,created:1774245575873,completed:null,due:'',context:'',notes:[],sort_order:21},
-  {id:'sw11',cat:'solarwinds',priority:'normal',text:'Finish June conversion allocation for opps',owner:'',done:false,created:1774245575273,completed:null,due:'',context:'',notes:[],sort_order:22},
-  {id:'sw12',cat:'solarwinds',priority:'normal',text:'Finalize mixed-only Tableau view',owner:'',done:false,created:1774245574673,completed:null,due:'',context:'',notes:[],sort_order:23},
-  {id:'sw13',cat:'solarwinds',priority:'normal',text:'Get rep capacity view from Vinay',owner:'Vinay',done:false,created:1774245574073,completed:null,due:'',context:'',notes:[],sort_order:24},
-  {id:'sw14',cat:'solarwinds',priority:'normal',text:'Update financial models',owner:'',done:true,created:1774245573473,completed:1774487825327,due:'',context:'',notes:[],sort_order:25},
-  {id:'sw20',cat:'solarwinds',priority:'normal',text:'Weekly dash for subs — AK (stalled deals logic, after maintenance dash)',owner:'Arush',done:false,created:1774420000004,completed:null,due:'',context:'',notes:[{id:'nAK3',text:'Start building after maintenance dash is in a good spot.\nKey question: how to incorporate stalled deals where week date > renewal date and < renewal date + 31 days.',date:'Mar 25'}],sort_order:26},
-  {id:'sw21',cat:'solarwinds',priority:'normal',text:'Weekly digest format by director — AW (+ workflow: scripts, task, dashboard)',owner:'Andrew',done:false,created:1774420000005,completed:null,due:'',context:'',notes:[{id:'nAW1',text:'AW to own. Format = weekly digest by director.\nAlso build out the full workflow: scripts + task automation + dashboard integration.',date:'Mar 25'}],sort_order:27},
-  {id:'sw22',cat:'solarwinds',priority:'normal',text:"Eric's dash gaps — AW",owner:'Andrew',done:false,created:1774420000006,completed:null,due:'',context:'',notes:[{id:'nAW2',text:"AW to identify and fill Eric's dashboard gaps. Suman to align with Eric on what's missing.",date:'Mar 25'}],sort_order:28},
-  {id:'dr1',cat:'dragonstone',priority:'high',text:'Build deck for Tuesday meeting with Juergen',owner:'Juergen',done:true,created:1774245572273,completed:1774248034459,due:'',context:'',notes:[],sort_order:29},
-  {id:'dr2',cat:'dragonstone',priority:'high',text:'Send Matt the Juergen deck and prep for the meeting',owner:'Matt',done:true,created:1774245572000,completed:1774373228371,due:'',context:'',notes:[],sort_order:30},
-  {id:'dr3',cat:'dragonstone',priority:'normal',text:'Ask Jason in the morning for a team meeting link',owner:'Jason',done:true,created:1774245571900,completed:1774373230166,due:'',context:'',notes:[],sort_order:31},
-  {id:'sc1',cat:'schneider',priority:'high',text:"Review Sriman's deck and provide comments",owner:'Sriman',done:true,created:1774245571673,completed:1774248105322,due:'',context:'',notes:[],sort_order:32},
-  {id:'sc2',cat:'schneider',priority:'high',text:'Prep note for Joanne on RIB and offer potential guidance',owner:'Joanne',done:true,created:1774245571073,completed:1774373231973,due:'',context:'',notes:[],sort_order:33},
-  {id:'sc3',cat:'schneider',priority:'normal',text:'Send Corp Dev email for in-person meeting — target April',owner:'Corp Dev',done:true,created:1774245570473,completed:1774329335130,due:'',context:'',notes:[],sort_order:34},
-  {id:'me1',cat:'mentorship',priority:'high',text:'Monday night: review my own annual review packet — prep open questions',owner:'',done:true,created:1774245569873,completed:1774373234394,due:'',context:'',notes:[],sort_order:35},
-  {id:'tr1',cat:'training',priority:'normal',text:'Go through training materials — build prep schedule for new associate batch (3 weeks out)',owner:'',done:false,created:1774245568673,completed:null,due:'',context:'',notes:[],sort_order:36},
-  {id:'fi1',cat:'financial',priority:'high',text:'Do budget analysis for 2025 full year and 2026 YTD — build budget for rest of year',owner:'',done:false,created:1774245568073,completed:null,due:'',context:'',notes:[],sort_order:37},
-  {id:'hl1',cat:'health',priority:'normal',text:'Mon Mar 23 — Chest day',owner:'',done:true,created:1774245567473,completed:1774329349342,due:'',context:'',notes:[{id:'n1',text:'Bench press 4x8, incline dumbbell press 3x10, cable flies 3x12, dips to failure.',date:'Mar 22'}],sort_order:38},
-  {id:'hl2',cat:'health',priority:'normal',text:'Tue Mar 24 — Legs day',owner:'',done:false,created:1774245566873,completed:null,due:'',context:'',notes:[{id:'n2',text:'Squats 4x8, leg press 3x12, Romanian deadlift 3x10, walking lunges 3x12, leg curl 3x12, calf raises 4x15.',date:'Mar 22'}],sort_order:39},
-  {id:'hl3',cat:'health',priority:'normal',text:'Wed Mar 25 — 3 mile run',owner:'',done:false,created:1774245566273,completed:null,due:'',context:'',notes:[{id:'n3',text:'Easy to moderate pace. ~25-35 min. Track your time.',date:'Mar 22'}],sort_order:40},
-  {id:'hl4',cat:'health',priority:'normal',text:'Thu Mar 26 — Back day',owner:'',done:false,created:1774245565673,completed:null,due:'',context:'',notes:[{id:'n4',text:'Deadlifts 4x6, pull-ups or lat pulldown 4x10, bent-over rows 3x10, seated cable row 3x12, face pulls 3x15.',date:'Mar 22'}],sort_order:41},
-  {id:'hl5',cat:'health',priority:'normal',text:'Fri Mar 27 — Arms day',owner:'',done:false,created:1774245565073,completed:null,due:'',context:'',notes:[{id:'n5',text:'Barbell curl 4x10, hammer curl 3x12, tricep pushdown 4x12, skull crushers 3x10, dips 3x failure.',date:'Mar 22'}],sort_order:42},
-  {id:'hl6',cat:'health',priority:'normal',text:'Sat Mar 28 — 4 mile run',owner:'',done:false,created:1774245564473,completed:null,due:'',context:'',notes:[{id:'n6',text:'Longer weekend run. ~35-45 min. Good pace, not a sprint.',date:'Mar 22'}],sort_order:43},
-  {id:'hl7',cat:'health',priority:'normal',text:'Sun Mar 29 — Long walk',owner:'',done:false,created:1774245563873,completed:null,due:'',context:'',notes:[{id:'n7',text:'Active recovery. 45-60 min at a comfortable pace.',date:'Mar 22'}],sort_order:44},
-  {id:'fo1',cat:'food',priority:'high',text:"Build this week's meal plan — low calorie, high protein, easy to prep",owner:'',done:false,created:1774245563273,completed:null,due:'',context:'',notes:[{id:'n8',text:'Target ~1,800-2,000 cal/day. Aim for 150-180g protein. Overnight oats, grilled chicken + roasted veg, salmon or turkey + greens.',date:'Mar 22'}],sort_order:45},
-  {id:'fo2',cat:'food',priority:'high',text:'Build grocery list for the week — low-cal, high-protein staples',owner:'',done:false,created:1774245562673,completed:null,due:'',context:'',notes:[{id:'n9',text:'Proteins: chicken breast, salmon, ground turkey, eggs, Greek yogurt, cottage cheese, protein powder. Veg: broccoli, spinach, bell peppers, zucchini, sweet potato.',date:'Mar 22'}],sort_order:46},
-  {id:'fo3',cat:'food',priority:'normal',text:'Sunday meal prep — batch cook proteins + chop veg for the week',owner:'',done:false,created:1774245562073,completed:null,due:'',context:'',notes:[],sort_order:47},
-  {id:'per1',cat:'errands',priority:'high',text:'Pay rent — due Fri Mar 27',owner:'',done:false,created:1774490000001,completed:null,due:'',context:'',notes:[],sort_order:48},
-];
+const SEED = []; // DB already seeded — array removed to reduce file size
 
 /* ── CATS & PAGES ─────────────────────────────────────────────────────── */
 const CATS={
@@ -1223,24 +1173,24 @@ async function init(){
   setDateTime();
   try {
     let rows = await sb('GET','tasks?order=sort_order.asc,created.asc');
-    if(!rows || rows.length===0){
-      // First time — seed the database
-      setStatus('loading','Seeding database…');
-      // Insert in batches of 10
-      for(let i=0;i<SEED.length;i+=10){
-        await sb('POST','tasks',SEED.slice(i,i+10));
-      }
-      rows = await sb('GET','tasks?order=sort_order.asc,created.asc');
-    }
-    tasks = rows;
+    tasks = rows || [];
     setStatus('ok','Live');
     document.getElementById('loadingScreen').style.display='none';
     document.getElementById('mainContent').style.display='block';
     try{document.getElementById('dailyNotes').value=localStorage.getItem(LS_NOTES)||'';}catch(e){}
     render();
-  await loadCommsFromSupabase();
-  await loadScheduleFromSupabase();
-  await loadNotesFromSupabase();
+  // Load secondary data async — don't block UI
+  setTimeout(async () => {
+    await Promise.all([
+      loadScheduleFromSupabase(),
+      loadCommsFromSupabase(),
+      loadNotesFromSupabase(),
+    ]);
+    // If user is on a non-task view, re-render it now data is loaded
+    if(['schedule','schedule_today'].includes(filter)) renderSchedule(filter);
+    else if(['comms','slack','gmail'].includes(filter)) renderComms(filter);
+    else if(filter==='notes') renderNotes();
+  }, 0);
   } catch(e){
     setStatus('err','Connection error');
     document.getElementById('loadingScreen').innerHTML=`<div style="color:var(--c-drag);font-size:14px;">⚠ Could not connect to Supabase.<br><small style="color:var(--text-mute)">${e.message}</small></div>`;
