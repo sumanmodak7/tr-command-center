@@ -558,22 +558,13 @@ async function sb(method, path, body) {
     }
   };
   if (body) opts.body = JSON.stringify(body);
-  // 8 second timeout — never hang forever
-  const controller = new AbortController();
-  const timer = setTimeout(() => controller.abort(), 8000);
-  try {
-    const res = await fetch(SUPABASE_URL + '/rest/v1/' + path, {...opts, signal: controller.signal});
-    clearTimeout(timer);
-    if (!res.ok) {
-      const err = await res.text();
-      throw new Error(err);
-    }
-    const text = await res.text();
-    return text ? JSON.parse(text) : null;
-  } catch(e) {
-    clearTimeout(timer);
-    throw e;
+  const res = await fetch(SUPABASE_URL + '/rest/v1/' + path, opts);
+  if (!res.ok) {
+    const err = await res.text();
+    throw new Error(err);
   }
+  const text = await res.text();
+  return text ? JSON.parse(text) : null;
 }
 
 /* ── SEED DATA (loaded on first run if DB is empty) ───────────────────── */
@@ -683,8 +674,7 @@ function renderNotes(){
   filtered.forEach(note => {
     const tags = (note.tags||'').split(',').map(t=>t.trim()).filter(Boolean);
     const date = note.updated_at ? new Date(note.updated_at).toLocaleDateString('en-US',{month:'short',day:'numeric'}) : '';
-    const preview = (note.body||'').slice(0,160).replace(/
-/g,' ');
+    const preview = (note.body||'').slice(0,160).replace(/\n/g,' ');
     html += `<div class="note-card${note.pinned?' pinned':''}" onclick="openNoteEditor('${note.id}')">
       <button class="note-del-btn" onclick="event.stopPropagation();deleteNote('${note.id}')" title="Delete">✕</button>
       <button class="note-pin-btn${note.pinned?' on':''}" onclick="event.stopPropagation();togglePinNote('${note.id}')" title="${note.pinned?'Unpin':'Pin'}">📌</button>
@@ -768,40 +758,50 @@ async function extractTasksFromNote(){
   if(!body){ alert('Add some note content first.'); return; }
 
   const btn = document.querySelector('.note-extract-btn');
-  btn.textContent = '⏳ Extracting…'; btn.disabled = true;
+  btn.textContent = '\u23f3 Extracting\u2026'; btn.disabled = true;
 
-  // Simple client-side extraction: look for lines starting with action words or - [ ]
-  const actionWords = /^([-•*]\s*\[?\s*\]?\s*|todo:?|action:?|follow up:?|send|call|review|build|update|check|confirm|schedule|discuss|respond|write|draft|prepare|create|ask|get|finish|complete)/i;
-  const lines = body.split('\n').map(l=>l.trim()).filter(Boolean);
-  const candidates = lines.filter(l=>actionWords.test(l));
+  const actionPrefixes = ['send','call','review','build','update','check','confirm','schedule','discuss','respond','write','draft','prepare','create','ask','get','finish','complete','todo','action','follow up'];
+  const lines = body.split('\n').map(function(l){return l.trim();}).filter(Boolean);
+  const candidates = lines.filter(function(l){
+    const lower = l.toLowerCase();
+    if(l.startsWith('-') || l.startsWith('\u2022') || l.startsWith('*')) return true;
+    for(let i=0;i<actionPrefixes.length;i++){
+      if(lower.startsWith(actionPrefixes[i])) return true;
+    }
+    return false;
+  });
 
   if(candidates.length===0){
-    btn.textContent='⚡ Extract Tasks'; btn.disabled=false;
-    alert('No clear action items found. Try starting lines with action verbs or checkboxes.');
+    btn.textContent='\u26a1 Extract Tasks'; btn.disabled=false;
+    alert('No clear action items found. Try starting lines with action verbs or - checkboxes.');
     return;
   }
 
-  // Show preview
-  const preview = candidates.slice(0,8).map(c=>c.replace(/^[-•*]\s*\[?\s*\]?\s*/,'')).join('\n');
-  const confirmed = confirm(`Found ${candidates.length} potential task(s):\n\n${preview}\n\nAdd these to your task list?`);
+  const clean = function(c){ return c.replace(/^[-\u2022*]\s*\[?\s*\]?\s*/,'').slice(0,200); };
+  const preview = candidates.slice(0,8).map(clean).join('\n');
+  const confirmed = confirm('Found '+candidates.length+' potential task(s):\n\n'+preview+'\n\nAdd these to your task list?');
 
   if(confirmed){
     const now = Date.now();
-    const newTasks = candidates.slice(0,10).map((c,i)=>({
-      id:'nt_'+now+'_'+i,
-      cat:'solarwinds', // default — user can change
-      priority:'normal',
-      text:c.replace(/^[-•*]\s*\[?\s*\]?\s*/,'').slice(0,200),
-      owner:'',done:false,created:now,completed:null,
-      due:'',context:`Extracted from note: ${title||'Untitled'}`,notes:[],sort_order:999+i
-    }));
-    tasks = [...newTasks, ...tasks];
+    const newTasks = candidates.slice(0,10).map(function(c,i){
+      return {
+        id:'nt_'+now+'_'+i,
+        cat:'solarwinds',
+        priority:'normal',
+        text:clean(c),
+        owner:'',done:false,created:now,completed:null,
+        due:'',context:'Extracted from note: '+(title||'Untitled'),notes:[],sort_order:999+i
+      };
+    });
+    tasks = newTasks.concat(tasks);
     render();
-    try{ await sb('POST','tasks',newTasks); setStatus('ok',`Added ${newTasks.length} tasks`); }
-    catch(e){ setStatus('err','Task save failed'); }
+    sb('POST','tasks',newTasks).then(function(){
+      setStatus('ok','Added '+newTasks.length+' tasks');
+      setTimeout(function(){setStatus('ok','Live');},2000);
+    }).catch(function(){ setStatus('err','Task save failed'); });
   }
 
-  btn.textContent='⚡ Extract Tasks'; btn.disabled=false;
+  btn.textContent='\u26a1 Extract Tasks'; btn.disabled=false;
 }
 
 // Ctrl+Enter to save note
@@ -908,7 +908,11 @@ function renderSchedule(filterMode){
       const {name}=fmtDayHeader(d);
       const short=name.slice(0,3);
       const isToday=d===todayStr();
-      html+=`<button class="sched-nav-btn${schedDayFilter===d?' active':''}${isToday?' '':''}" onclick="schedFilterDay('${d}')">${isToday?'<b>':''} ${short} ${new Date(d+'T12:00:00').getDate()}${isToday?'</b>':''}</button>`;
+      const dayNum = new Date(d+'T12:00:00').getDate();
+      const activeClass = schedDayFilter===d?' active':'';
+      const boldO = isToday?'<b>':'';
+      const boldC = isToday?'</b>':'';
+      html+='<button class="sched-nav-btn'+activeClass+'" onclick="schedFilterDay(\''+d+'\')">'+boldO+' '+short+' '+dayNum+boldC+'</button>';
     });
   }
   html+=`<button class="sched-add-btn" onclick="schedAddBlock()">+ Add Block</button>`;
@@ -1186,6 +1190,8 @@ async function loadCommsFromSupabase(){
 async function init(){
   setDateTime();
   setStatus('loading','Connecting…');
+  // Force DOM repaint before fetch blocks
+  await new Promise(r => requestAnimationFrame(r));
   try {
     let rows;
     try {
@@ -1213,6 +1219,7 @@ async function init(){
     else if(filter==='notes') renderNotes();
   }, 0);
   } catch(e){
+    console.error('Dashboard connection error:', e);
     setStatus('err','Connection error');
     document.getElementById('taskList').innerHTML=`<div style="text-align:center;padding:40px 20px;color:var(--c-drag)"><div style="font-size:24px;margin-bottom:12px">⚠</div><div style="font-weight:600;margin-bottom:6px">Could not connect to Supabase</div><div style="font-size:12px;color:var(--text-mute);margin-bottom:16px">${e.message||'Network error'}</div><button onclick="init()" style="background:var(--navy);border:none;border-radius:4px;color:#fff;font-family:'DM Sans',sans-serif;font-size:12px;font-weight:600;padding:8px 20px;cursor:pointer">↻ Retry</button></div>`;
   }
