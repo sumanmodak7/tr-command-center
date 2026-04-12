@@ -706,11 +706,12 @@ function openNoteEditor(id){
     document.getElementById('neTags').value = '';
     document.getElementById('neMeta').textContent = '';
   }
+  window._notesWriteLock=true;
   document.getElementById('noteEditor').classList.add('open');
   setTimeout(()=>document.getElementById(editingNoteId?'neBody':'neTitle').focus(),100);
 }
 
-function closeNoteEditor(){ document.getElementById('noteEditor').classList.remove('open'); editingNoteId=null; }
+function closeNoteEditor(){ window._notesWriteLock=false; document.getElementById('noteEditor').classList.remove('open'); editingNoteId=null; }
 function maybeCloseNoteEditor(e){ if(e.target===document.getElementById('noteEditor')) closeNoteEditor(); }
 
 async function saveNote(){
@@ -1315,9 +1316,13 @@ async function reopenTask(id){
 async function cyclePrio(id){
   const t=tasks.find(x=>x.id===id); if(!t) return;
   t.priority={normal:'high',high:'low',low:'normal'}[t.priority]||'normal';
+  window._taskWriteLock=true;
+  clearTimeout(window._taskWriteLockTimer);
+  window._taskWriteLockTimer=setTimeout(()=>{window._taskWriteLock=false;},3000);
   render();
   try{ await sb('PATCH',`tasks?id=eq.${id}`,{priority:t.priority}); }
   catch(e){ setStatus('err','Save failed'); }
+  window._taskWriteLock=false;
 }
 
 async function deleteTask(id){
@@ -1379,6 +1384,7 @@ function onDrop(e){e.preventDefault();}
 
 /* ── MODAL ────────────────────────────────────────────────────────────── */
 function openModal(id){
+  window._taskWriteLock=true;
   const t=tasks.find(x=>x.id===id); if(!t) return;
   editingId=id;
   const c=CATS[t.cat]||CATS.financial;
@@ -1445,6 +1451,7 @@ async function saveModal(){
 }
 
 function closeModal(){document.getElementById('modalOverlay').classList.remove('open');editingId=null;}
+  window._taskWriteLock=false;
 function maybeCloseModal(e){if(e.target===document.getElementById('modalOverlay'))closeModal();}
 document.addEventListener('keydown',e=>{
   if(e.key==='Escape')closeModal();
@@ -1584,14 +1591,19 @@ setInterval(async () => {
     let tasksChanged=false, schedChanged=false, commsChanged=false;
 
     if(taskRows && JSON.stringify(taskRows)!==JSON.stringify(tasks)){
-      tasks=taskRows; tasksChanged=true;
+      // Don't overwrite tasks if user just made a change (write lock)
+      if(!window._taskWriteLock){
+        tasks=taskRows; tasksChanged=true;
+      }
     }
     if(schedRows && JSON.stringify(schedRows)!==JSON.stringify(scheduleItems)){
       scheduleItems=schedRows; scheduleLoaded=true; schedChanged=true;
     }
     if(notesRows && JSON.stringify(notesRows)!==JSON.stringify(notesItems)){
-      notesItems=notesRows; notesLoaded=true;
-      document.getElementById('cnt-notes').textContent=notesItems.length||'';
+      if(!window._notesWriteLock){
+        notesItems=notesRows; notesLoaded=true;
+        document.getElementById('cnt-notes').textContent=notesItems.length||'';
+      }
     }
     if(commsRows && JSON.stringify(commsRows)!==JSON.stringify(commsItems)){
       commsItems=commsRows; commsLoaded=true; commsChanged=true;
